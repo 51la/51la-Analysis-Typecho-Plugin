@@ -48,8 +48,30 @@ class LaAnalysis_Plugin implements Typecho_Plugin_Interface
             _t('引入类型'),
             '* 同步引入：默认安装方式。<br>* 异步引入：异步引入方式下，统计代码相对于其他脚本，会延迟异步加载，代码加载不阻塞页面的解析。页面内容加载的时间存在优先于统计代码加载的情况，可能会导致统计数据因访客网络加载慢等问题无法执行到加载统计代码这一步，导致统计数据小于实际情况。若对页面性能的要求非常高，建议使用此方式。<br /><img src="//ia.51.la/go1?id=21273525&pvFlag=1" style="border:none;height:1px;width:1px;" />'
         );
+        $autoTrack = new Typecho_Widget_Helper_Form_Element_Radio(
+            "autoTrack",
+            array(
+                '0' => '不启用',
+                '1' => '启用',
+            ),
+            '0',
+            _t('事件分析'),
+            '* 事件分析功能：默认不启用<br>* 详细介绍请前往以下链接<a href="https://www.yuque.com/dvqnxr/ztsh8g/kadxe7" target="_blank">事件分析功能介绍</a>'
+        );
+        $hashMode = new Typecho_Widget_Helper_Form_Element_Radio(
+            "hashMode",
+            array(
+                '0' => '不启用',
+                '1' => '启用',
+            ),
+            '0',
+            _t('单页面应用统计'),
+            '* 单页面应用统计功能：默认不启用<br>* 使用单页面应用统计，如使用了Vue / React等框架构建的单页面应用网站<br>* 详细介绍请前往以下链接<a href="https://www.yuque.com/dvqnxr/ztsh8g/gi8ybb#paMYV" target="_blank">单页面应用统计功能介绍</a>'
+        );
         $form->addInput($maskId);
         $form->addInput($type);
+        $form->addInput($autoTrack);
+        $form->addInput($hashMode);
     }
 
     /**
@@ -89,13 +111,25 @@ class LaAnalysis_Plugin implements Typecho_Plugin_Interface
         $pluginOption = unserialize($pluginOption);
         $maskId = $pluginOption["maskId"];
         $type = $pluginOption["type"];
+        $autoTrack = $pluginOption["autoTrack"];
+        $hashMode = $pluginOption["hashMode"];
+        if ($autoTrack) {
+            $autoTrackCode = ",autoTrack:true";
+        } else {
+            $autoTrackCode = null;
+        }
+        if ($hashMode) {
+            $hashModeCode = ",hashMode:true";
+        } else {
+            $hashModeCode = null;
+        }
         if ($type) {
             echo "<script>
-            !function(p){'use strict';!function(t){var s=window,e=document,i=p,c=''.concat('https:'===e.location.protocol?'https://':'http://','sdk.51.la/js-sdk-pro.min.js'),n=e.createElement('script'),r=e.getElementsByTagName('script')[0];n.type='text/javascript',n.setAttribute('charset','UTF-8'),n.async=!0,n.src=c,n.id='LA_COLLECT',i.d=n;var o=function(){s.LA.ids.push(i)};s.LA?s.LA.ids&&o():(s.LA=p,s.LA.ids=[],o()),r.parentNode.insertBefore(n,r)}()}({id:'$maskId',ck:'$maskId'});
+            !function(p){'use strict';!function(t){var s=window,e=document,i=p,c=''.concat('https:'===e.location.protocol?'https://':'http://','sdk.51.la/js-sdk-pro.min.js'),n=e.createElement('script'),r=e.getElementsByTagName('script')[0];n.type='text/javascript',n.setAttribute('charset','UTF-8'),n.async=!0,n.src=c,n.id='LA_COLLECT',i.d=n;var o=function(){s.LA.ids.push(i)};s.LA?s.LA.ids&&o():(s.LA=p,s.LA.ids=[],o()),r.parentNode.insertBefore(n,r)}()}({id:'$maskId',ck:'$maskId'$autoTrackCode$hashModeCode});
             </script>";
         } else {
             echo "<script charset='UTF-8' id='LA_COLLECT' src='//sdk.51.la/js-sdk-pro.min.js'></script>
-                <script>LA.init({id: '$maskId',ck: '$maskId'})</script>";
+                <script>LA.init({id: '$maskId',ck: '$maskId'$autoTrackCode$hashModeCode})</script>";
         }
     }
 }
